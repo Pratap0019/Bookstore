@@ -7,19 +7,19 @@
         body {
             font-family: 'Poppins', sans-serif;
             padding-top: 130px;
-            background-image: url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1600&q=80'); /* 📚 cozy library interior */
+            background-image: url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1600&q=80');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
         }
         .overlay {
-            background: rgba(255, 255, 255, 0.85); /* translucent overlay */
+            background: rgba(255, 255, 255, 0.85);
             min-height: 100vh;
             padding: 40px;
             border-radius: 12px;
         }
         .header {
-            background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1500&q=80'); /* 🏪 bookstore header */
+            background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1500&q=80');
             background-size: cover;
             background-position: center;
             position: fixed;
@@ -41,12 +41,13 @@
             gap: 12px;
         }
         .card, .form-control {
-            background: rgba(255, 255, 255, 0.9); /* semi-transparent form elements */
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
         }
     </style>
 </head>
 <body>
+
 <!-- Header -->
 <div class="header">
     <div class="container-fluid">
@@ -65,11 +66,11 @@
     </div>
 </div>
 
-<!-- Page Content with translucent overlay -->
+<!-- Page Content -->
 <div class="container mt-5">
     <div class="overlay">
         <h1>Checkout</h1>
-        <form th:action="@{/checkout}" method="post" th:object="${order}">
+        <form th:action="@{/checkout}" method="post" th:object="${order}" id="checkout-form">
             <div class="mb-3">
                 <label>Name</label>
                 <input type="text" th:field="*{customerName}" class="form-control" required>
@@ -82,9 +83,30 @@
                 <label>Phone</label>
                 <input type="text" th:field="*{phone}" class="form-control" required>
             </div>
+            <!-- Hidden input to store cart items -->
+            <input type="hidden" name="books" id="cart-hidden">
             <button type="submit" class="btn btn-primary">Place Order</button>
         </form>
     </div>
 </div>
+
+<script>
+    // On page load, populate hidden field with cart items
+    document.addEventListener('DOMContentLoaded', () => {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartHidden = document.getElementById('cart-hidden');
+
+        // Convert cart to array of titles
+        const bookTitles = cart.map(item => item.title);
+        cartHidden.value = JSON.stringify(bookTitles);
+
+        // Clear localStorage after successful form submission
+        const form = document.getElementById('checkout-form');
+        form.addEventListener('submit', () => {
+            localStorage.removeItem('cart');
+        });
+    });
+</script>
+
 </body>
 </html>

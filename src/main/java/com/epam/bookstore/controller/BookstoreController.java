@@ -1,6 +1,8 @@
 package com.epam.bookstore.controller;
 
 import com.epam.bookstore.repository.OrderRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -51,13 +53,32 @@ import java.util.*;
         }
 
         @PostMapping("/checkout")
-        public String checkout(@ModelAttribute Order order, Model model) {
-            List<String> bookTitles = cart.stream().map(Book::getTitle).toList();
-            order.setBooks(bookTitles);
-            orderRepository.save(order);
-            cart.clear();
-            model.addAttribute("orderId", order.getOrderId());
+        public String checkout(@ModelAttribute Order order,
+                               @RequestParam("books") String booksJson,
+                               Model model) {
+            try {
+                // Parse the JSON array of book titles
+                List<String> bookTitles = new ArrayList<>();
+                if (booksJson != null && !booksJson.isEmpty()) {
+                    // Using Jackson ObjectMapper
+                    ObjectMapper mapper = new ObjectMapper();
+                    bookTitles = mapper.readValue(booksJson, new TypeReference<List<String>>() {});
+                }
+
+                // Set books in order and save
+                order.setBooks(bookTitles);
+                orderRepository.save(order);
+
+                // Pass orderId to success page
+                model.addAttribute("orderId", order.getOrderId());
+            } catch (Exception e) {
+                e.printStackTrace();
+                model.addAttribute("error", "Failed to process order.");
+                return "checkout";
+            }
+
             return "success";
         }
+
     }
 
